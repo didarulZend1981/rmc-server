@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 
 
-const { MongoClient, ServerApiVersion} = require('mongodb');
+const { MongoClient, ServerApiVersion,ObjectId} = require('mongodb');
 require('dotenv').config()
 const app = express();
 const port = process.env.PORT || 5000;
@@ -46,6 +46,61 @@ async function run() {
     const categoryCollection = client.db('resturentDB').collection('category');
     const foodsCollection = client.db("resturentDB").collection("foods");
 
+    app.get('/food', async (req, res) => {
+      const cursor = foodsCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+  })
+
+  app.get('/food/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await foodsCollection.findOne(query);
+      res.send(result);
+  })
+
+
+   app.put('/food/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const options = { upsert: true };
+      const updatedFood = req.body;
+
+      const product = {
+          $set: {
+              Food_Name: updatedFood.Food_Name,
+              Food_Image: updatedFood.Food_Image,
+              Food_Category: updatedFood.Food_Category,
+              quantity: updatedFood.quantity,
+              price: updatedFood.price,
+              Food_Origin: updatedFood.Food_Origin,
+              description: updatedFood.description,
+             
+              email: updatedFood.email,
+              name: updatedFood.name,
+   
+           
+          }
+      }
+
+      const result = await foodsCollection.updateOne(filter, product, options);
+      res.send(result);
+  })
+
+
+    app.get('/foodEmail', async (req, res) => {
+      console.log(req.query.email);
+      let query = {};
+      if (req.query?.email) {
+          query = { email: req.query.email }
+      }
+      const result = await foodsCollection.find(query).toArray();
+      res.send(result);
+  })
+
+
+
+    
 
     app.post("/addFood", async (req, res) => {
       console.log(req.body);
