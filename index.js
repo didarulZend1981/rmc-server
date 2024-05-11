@@ -44,7 +44,16 @@ async function run() {
    
 
     const categoryCollection = client.db('resturentDB').collection('category');
-    
+    const foodsCollection = client.db("resturentDB").collection("foods");
+
+
+    app.post("/addFood", async (req, res) => {
+      console.log(req.body);
+      const result = await foodsCollection.insertOne(req.body);
+      console.log(result);
+       res.send(result)
+    })
+
 
     app.get('/category', async (req, res) => {
         const cursor = categoryCollection.find();
