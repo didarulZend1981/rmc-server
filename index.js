@@ -263,39 +263,65 @@ async function run() {
   //selling count purpose
 
 
-  app.get('/product/:id/selling-count', async (req, res) => {
-         const productId = req.params.id;
+  // app.get('/product/:id/selling-count', async (req, res) => {
+  //        const productId = req.params.id;
 
-         console.log("test--",productId);
-        // Find the products, limit the results to 6, and sort by sellingCount in descending order
+  //        console.log("test--",productId);
+  //       // Find the products, limit the results to 6, and sort by sellingCount in descending order
         
-        const product = await foodOrderCollection.updateOne(
-          { Food_Name_id: productId },
-          { $inc: { sellingCount: 1 } }
-        );
+  //       const product = await foodOrderCollection.updateOne(
+  //         { Food_Name_id: productId },
+  //         { $inc: { sellingCount: 1 } }
+  //       );
 
-      //   db.products.updateOne(
-      //     { sku: "abc123" },
-      //     { $inc: { quantity: -2, "metrics.orders": 1 } }
-      //  )
+  //     //   db.products.updateOne(
+  //     //     { sku: "abc123" },
+  //     //     { $inc: { quantity: -2, "metrics.orders": 1 } }
+  //     //  )
 
-        if (!product || product.length === 0) {
-            return res.status(404).json({ message: 'No product found' });
-        }
+  //       if (!product || product.length === 0) {
+  //           return res.status(404).json({ message: 'No product found' });
+  //       }
 
-        res.json({ sellingCount: product.sellingCount });
-    }) 
+  //       res.json({ sellingCount: product.sellingCount });
+  //   }) 
 
 
-    app.get('/top-selling', async (req, res) => {
-      try {
-          const topSelling = await foodsCollection.find().sort({ product: -1 }).limit(6);
-          res.json(topSelling);
-      } catch (err) {
-          res.status(500).json({ message: err.message });
-      }
-  });
+  //   app.get('/top-selling', async (req, res) => {
+  //     try {
+  //         const topSelling = await foodsCollection.find().sort({ product: -1 }).limit(6);
+  //         res.json(topSelling);
+  //     } catch (err) {
+  //         res.status(500).json({ message: err.message });
+  //     }
+  // });
    
+
+
+
+
+  app.get('/top-selling-food-items', async (req, res) => {
+    try {
+       
+        const topSex = [
+            { $group: { _id: "$Food_Name_id", sellingCount: { $sum: 1 } } },
+            { $sort: { sellingCount: -1 } },
+            { $limit: 6 }
+        ];
+
+        const topSellingFoodItems = await foodOrderCollection.aggregate(topSex).toArray();
+        res.json(topSellingFoodItems);
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+
+
+
+
+
   //ending selling count 
 
 
@@ -330,9 +356,9 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('doctor is running')
+    res.send('RMC is running')
 })
 
 app.listen(port, () => {
-    console.log(`resturentDB Doctor Server is running on port ${port}`)
+    console.log(`resturentDB RMC Server is running on port ${port}`)
 })
